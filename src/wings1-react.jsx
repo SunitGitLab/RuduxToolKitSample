@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 
 function App() {
-  /**
-   * default required agenda details
-   */
   const defaultAgenda = [
     {
       title: "Angular",
@@ -29,9 +26,8 @@ function App() {
     },
   ];
 
-  // state
-  const [submitted, setSubmitted] = useState(false);
-  const [agendaList, setAgendaList] = useState([]);
+  const [agendaList, setAgendaList] = useState(defaultAgenda);
+
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [topic, setTopic] = useState("");
@@ -40,112 +36,108 @@ function App() {
   const [showAddAgenda, setShowAddAgenda] = useState(true);
   const [showViewAgenda, setShowViewAgenda] = useState(false);
 
-  // validations
+  /* VALIDATIONS (as expected by tests) */
   const isTitleValid = newTitle.trim() !== "";
   const isDescriptionValid = newDescription.trim() !== "";
   const isTopicValid = topic.trim() !== "";
 
-  // add topic
-  const handleAddTopic = () => {
+  /* ADD TOPIC */
+  const handleAddTopic = (e) => {
+    e.preventDefault();
     if (!isTopicValid) return;
+
     setTopics([...topics, topic]);
     setTopic("");
   };
 
-  // submit agenda
-  const handleSubmitAgenda = () => {
-    setSubmitted(true);
+  /* SUBMIT AGENDA */
+  const handleSubmitAgenda = (e) => {
+    e.preventDefault();
     if (!isTitleValid || !isDescriptionValid || topics.length === 0) return;
-    const newAgenda = {
-      title: newTitle,
-      description: newDescription,
-      topics,
-    };
 
-    setAgendaList([...agendaList, newAgenda]);
+    setAgendaList([
+      ...agendaList,
+      {
+        title: newTitle,
+        description: newDescription,
+        topics,
+      },
+    ]);
+
     setNewTitle("");
     setNewDescription("");
-    setTopics([]);
     setTopic("");
-
-    setShowAddAgenda(false);
-    setShowViewAgenda(true);
+    setTopics([]);
   };
 
   return (
     <div>
       <h1 className="mx-5 mb-5">Agenda Manager</h1>
 
-      {/* Add Agenda UI */}
-      <div className="container" role="addAgenda">
-        <button
-          className="btn btn-info"
-          role="goToView"
-          onClick={() => {
-            setShowAddAgenda(false);
-            setShowViewAgenda(true);
-          }}
-        >
-          Click To View Agenda
-        </button>
+      {/* ADD AGENDA */}
+      {showAddAgenda && (
+        <div className="container" role="addAgenda">
+          <button
+            className="btn btn-info"
+            role="goToView"
+            onClick={() => {
+              setShowAddAgenda(false);
+              setShowViewAgenda(true);
+            }}
+          >
+            Click To View Agenda
+          </button>
 
-        {showAddAgenda && (
           <form>
-            {/* Title */}
+            {/* TITLE */}
             <div className="my-3">
               <label className="form-label">Title</label>
               <input
                 type="text"
-                name="newTitle"
-                placeholder="Enter the title"
-                className="form-control"
                 role="inputTitle"
+                className="form-control"
                 value={newTitle}
                 onChange={(e) => setNewTitle(e.target.value)}
               />
-              <small className="text-danger" data-testid="invalidTitle">
-                {submitted && !isTitleValid ? "Title is required" : ""}
+              <small data-testid="invalidTitle" className="text-danger">
+                {!isTitleValid ? "Title is required" : ""}
               </small>
             </div>
 
-            {/* Description */}
+            {/* DESCRIPTION */}
             <div className="my-3">
               <label className="form-label">Description</label>
               <input
                 type="text"
-                name="newDescription"
-                placeholder="Enter the description"
-                className="form-control"
                 role="inputDescription"
+                className="form-control"
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
               />
-              <small className="text-danger" data-testid="invalidDescription">
-                {submitted && !isDescriptionValid
-                  ? "Description is required"
-                  : ""}
+              <small data-testid="invalidDescription" className="text-danger">
+                {!isDescriptionValid ? "Description is required" : ""}
               </small>
             </div>
 
-            {/* Topic */}
+            {/* TOPIC */}
             <div className="my-3 w-50">
               <label className="form-label">Enter topic</label>
               <input
                 type="text"
-                name="newTopic"
-                placeholder="Enter the topic"
-                className="form-control"
                 role="inputTopic"
+                className="form-control"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
               />
-              <small className="text-danger" data-testid="invalidTopic">
-                {submitted && !isTopicValid ? "Topic is required" : ""}
+              <small data-testid="invalidTopic" className="text-danger">
+                {topics.length === 0 && !isTopicValid
+                  ? "Topic is required"
+                  : ""}
               </small>
             </div>
 
             <button
-              className="btn btn-success addAlign"
+              className="btn btn-success"
               role="addTopicBtn"
               onClick={handleAddTopic}
               disabled={!isTopicValid}
@@ -153,21 +145,21 @@ function App() {
               + Add Topic
             </button>
 
-            {/* No topics */}
+            {/* NO TOPICS */}
             {topics.length === 0 && (
-              <div className="text-danger ml-2 mt-5" data-testid="noTopicsMsg">
+              <div data-testid="noTopicsMsg" className="text-danger mt-4">
                 No Topics Added
               </div>
             )}
 
-            {/* Topics List */}
+            {/* TOPICS LIST */}
             {topics.length > 0 && (
               <div className="card my-3">
                 <div className="card-header">Added Topics</div>
                 <div className="card-body">
                   <ul className="list-group">
                     {topics.map((t, i) => (
-                      <li key={i} className="list-group-item" role="topicList">
+                      <li key={i} role="topicList" className="list-group-item">
                         {t}
                       </li>
                     ))}
@@ -177,9 +169,8 @@ function App() {
               </div>
             )}
 
-            {/* Submit */}
             <button
-              className="btn btn-success submitAlign"
+              className="btn btn-success mt-3"
               role="submitAgendaBtn"
               onClick={handleSubmitAgenda}
               disabled={
@@ -189,42 +180,40 @@ function App() {
               Submit Agenda
             </button>
           </form>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* View Agenda */}
-      <div className="container" role="viewAgenda">
-        <button
-          className="btn btn-info"
-          role="goToAdd"
-          onClick={() => {
-            setShowAddAgenda(true);
-            setShowViewAgenda(false);
-          }}
-        >
-          Click To Add Agenda
-        </button>
+      {/* VIEW AGENDA */}
+      {showViewAgenda && (
+        <div className="container" role="viewAgenda">
+          <button
+            className="btn btn-info"
+            role="goToAdd"
+            onClick={() => {
+              setShowAddAgenda(true);
+              setShowViewAgenda(false);
+            }}
+          >
+            Click To Add Agenda
+          </button>
 
-        {showViewAgenda && (
-          <div className="card my-3" role="cards">
-            {agendaList.map((agenda, index) => (
-              <div key={index} className="card my-3">
-                <div className="card-header">{agenda.title}</div>
-                <div className="card-body">
-                  <ul className="list-group">
-                    {agenda.topics.map((t, i) => (
-                      <li key={i} className="list-group-item">
-                        {t}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="card-footer">{agenda.description}</div>
+          {agendaList.map((agenda, index) => (
+            <div className="card my-3" role="cards" key={index}>
+              <div className="card-header">{agenda.title}</div>
+              <div className="card-body">
+                <ul className="list-group">
+                  {agenda.topics.map((t, i) => (
+                    <li key={i} className="list-group-item">
+                      {t}
+                    </li>
+                  ))}
+                </ul>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              <div className="card-footer">{agenda.description}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

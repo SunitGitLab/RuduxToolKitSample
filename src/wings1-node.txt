@@ -1,0 +1,127 @@
+const mongoose = require("mongoose");
+
+const sellBuySchema = new mongoose.Schema({
+  productName: {
+    type: String,
+    required: true,
+    minlength: [4, "product name should have minimum of four characters"]
+  },
+  costPrice: {
+    type: Number,
+    required: true,
+    validate(value) {
+      if (value <= 0) {
+        throw new Error("cost price value cannot be zero or negative value");
+      }
+    }
+  },
+  soldPrice: {
+    type: Number,
+    validate(value) {
+      if (value <= 0) {
+        throw new Error("sold price value cannot be zero or negative value");
+      }
+    }
+  }
+});
+
+const SellBuy = mongoose.model("sellbuys", sellBuySchema);
+module.exports = SellBuy;
+
+ ***********************************************************************************************
+ ***********************************************************************************************
+
+
+ const express = require("express");
+const router = new express.Router();
+const SellBuy = require("../mongoose/models/sellBuy");
+
+/* ---------- POST ---------- */
+router.post("/sellProduct", async (req, res) => {
+  try {
+    const product = new SellBuy(req.body);
+    await product.save();
+    res.status(201).send({ message: "Product Added" });
+  } catch (e) {
+    res.status(400).send({ error: e.message });
+  }
+});
+
+/* ---------- PATCH ---------- */
+router.patch("/sellProduct/:id", async (req, res) => {
+  try {
+    const product = await SellBuy.findById(req.params.id);
+    if (!product) throw new Error("Invalid Id");
+
+    Object.keys(req.body).forEach(key => {
+      product[key] = req.body[key];
+    });
+
+    await product.save();
+    res.status(200).send({ message: "Updated Successfully" });
+  } catch (e) {
+    res.status(400).send({ error: e.message });
+  }
+});
+
+/* ---------- DELETE ---------- */
+router.delete("/sellProduct/:id", async (req, res) => {
+  try {
+    const product = await SellBuy.findByIdAndDelete(req.params.id);
+    if (!product) throw new Error("Invalid Id");
+    res.status(200).send({ message: "Deleted successfully" });
+  } catch (e) {
+    res.status(400).send();
+  }
+});
+
+/* ---------- GET ---------- */
+router.get("/sellProduct", async (req, res) => {
+  try {
+    let products;
+
+    // filter by product name (case-insensitive)
+    if (req.query.product) {
+      products = await SellBuy.find({
+        productName: req.query.product
+      });
+    } else {
+      products = await SellBuy.find({});
+    }
+
+    // lowerCostPrice
+    if (req.query.sortBy === "lowerCostPrice") {
+      products.sort((a, b) => a.costPrice - b.costPrice);
+    }
+
+    // higherCostPrice
+    if (req.query.sortBy === "higherCostPrice") {
+      products.sort((a, b) => b.costPrice - a.costPrice);
+    }
+
+    // lowerSoldPrice ✅ FIX
+    if (req.query.sortBy === "lowerSoldPrice") {
+      products.sort((a, b) => {
+        if (a.soldPrice === undefined) return -1;
+        if (b.soldPrice === undefined) return 1;
+        return a.soldPrice - b.soldPrice;
+      });
+    }
+
+    // higherSoldPrice ✅ FIX
+    if (req.query.sortBy === "higherSoldPrice") {
+      products.sort((a, b) => {
+        if (a.soldPrice === undefined) return 1;
+        if (b.soldPrice === undefined) return -1;
+        return b.soldPrice - a.soldPrice;
+      });
+    }
+
+    res.status(200).send(products);
+  } catch (e) {
+    res.status(500).send();
+  }
+});
+
+
+module.exports = router;

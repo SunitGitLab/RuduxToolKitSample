@@ -1,0 +1,93 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import "./App.css";
+
+function App() {
+  const [data, setData] = useState([]);
+  const [rating, setRating] = useState(1);
+  const [refresh, setRefresh] = useState(0);
+
+  const handleGetData = async () => {
+    const res = await axios.get("http://localhost:8001/courses/get");
+    setData(res.data);
+  };
+
+  useEffect(() => {
+    handleGetData();
+  }, [refresh]);
+
+  const handleApply = async (id) => {
+    const res = await axios.post(
+      `http://localhost:8001/courses/enroll/${id}`
+    );
+    alert(res.message);
+    setRefresh(prev => prev + 1);
+  };
+
+  const handleRating = (e) => {
+    setRating(Number(e.target.value));
+  };
+
+  const handleAddRating = async (id) => {
+    await axios.patch(
+      `http://localhost:8001/courses/rating/${id}`,
+      { rating }
+    );
+    setRefresh(prev => prev + 1);
+  };
+
+  const handleDrop = async (id) => {
+    await axios.delete(
+      `http://localhost:8001/courses/drop/${id}`
+    );
+    setRefresh(prev => prev + 1);
+  };
+
+  return (
+    <div>
+      {data.map((course) => (
+        <div key={course._id}>
+          <li data-testid="course-name">{course.courseName}</li>
+          <li data-testid="course-dept">{course.courseDept}</li>
+          <li data-testid="course-description">{course.description}</li>
+
+          <select
+            data-testid="select-box"
+            name="rating"
+            onChange={handleRating}
+            disabled={course.isRated}
+          >
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+          </select>
+
+          <button
+            data-testid="add-rate"
+            onClick={() => handleAddRating(course.id)}
+          >
+            Add
+          </button>
+
+          <button
+            data-testid="apply"
+            onClick={() => handleApply(course.id)}
+          >
+            Apply
+          </button>
+
+          <button
+            data-testid="drop"
+            onClick={() => handleDrop(course.id)}
+          >
+            Drop Course
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default App;

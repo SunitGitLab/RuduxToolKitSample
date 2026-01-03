@@ -1,3 +1,4 @@
+import react from "react";
 import AddToCart from "./AddtoCart.jsx";
 
 const Header = () => {
