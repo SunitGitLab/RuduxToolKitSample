@@ -1,5 +1,6 @@
-import react from "react";
+import React from "react";
 import AddToCart from "./AddtoCart.jsx";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
@@ -7,9 +8,11 @@ const Header = () => {
       <div className="logo">MyStore</div>
 
       <nav className="nav">
-        <a href="#">Home</a>
-        <a href="#">Shop</a>
-        <a href="#">Contact</a>
+        <ul>
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+        </ul>
       </nav>
       <AddToCart />
     </header>

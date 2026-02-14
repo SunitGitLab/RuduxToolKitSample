@@ -38,7 +38,7 @@ module.exports = {
       },
       // You would add more rules here for CSS, images, etc.
       {
-        test: /\.(scss|sass)$/,
+        test: /\.(scss|sass|css)$/,
         use: ['style-loader', 'css-loader', 'sass-loader'] 
         // Order: sass-loader (compiles SCSS to CSS) -> css-loader -> style-loader
       },
